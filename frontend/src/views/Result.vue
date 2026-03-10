@@ -3374,17 +3374,20 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 }
 
 .overview-swiper {
-  padding: 8px 2px 14px;
+  padding: 8px 2px 10px;
 }
 
 .overview-swiper .swiper {
-  padding: 1.875rem 0rem;
+  padding: 0 0 0.6rem;
+  margin-top: -2rem;
+  margin-bottom: -2rem;
   overflow: hidden;
   border-radius: 12px;
 }
 
 .overview-swiper .swiper-wrapper {
   align-items: flex-end;
+  min-height: 32rem;
 }
 
 
@@ -4030,6 +4033,11 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
   .overview-swiper .swiper-wrapper {
     gap: 1rem;
+    min-height: 27rem;
+  }
+
+  .overview-swiper .swiper {
+    padding: 2.4rem 0 0.6rem;
   }
 
   .budget-toolbar {
