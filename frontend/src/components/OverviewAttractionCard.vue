@@ -148,6 +148,7 @@ main {
       text-transform: capitalize;
       letter-spacing: 0.02rem;
       white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
     p {
@@ -159,6 +160,7 @@ main {
       line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .show-more {
