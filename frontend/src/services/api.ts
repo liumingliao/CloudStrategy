@@ -104,5 +104,18 @@ export async function healthCheck(): Promise<any> {
   }
 }
 
+/**
+ * 获取策略方案列表
+ */
+export async function getStrategies(taskId: string): Promise<any> {
+  try {
+    const response = await apiClient.get(`/api/trip/strategies/${taskId}`)
+    return response.data
+  } catch (error: any) {
+    console.error('获取策略方案失败:', error)
+    throw new Error(error.message || '获取策略方案失败')
+  }
+}
+
 export default apiClient
 

@@ -11,10 +11,10 @@
             <!-- <p class="landing-hero-badge text-center">{{ t('home.heroBadge') }}</p> -->
             <div class="title-brand">
               <h1 class="presentation-title">
-                TRIPSTAR
+                云游策
               </h1>
             </div>
-            <h2 class="presentation-subtitle text-center">{{ t('home.titleLine') }}</h2>
+            <h2 class="presentation-subtitle text-center">以云端之智 成脚下之路</h2>
           </div>
         </div>
         <div class="moving-clouds" :style="movingCloudsStyle"></div>

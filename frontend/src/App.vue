@@ -50,15 +50,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { setAppLocale, type AppLocale } from '@/i18n'
 
 const { t, locale } = useI18n()
-const route = useRoute()
-const year = new Date().getFullYear()
-const isLandingRoute = computed(() => route.name === 'Landing')
+// const year = new Date().getFullYear()  // TODO: enable when footer uncommented
+// const isLandingRoute = computed(() => route.name === 'Landing')  // TODO: enable when header uncommented
 
 watch(
   locale,
@@ -71,15 +69,10 @@ watch(
 </script>
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-
-* {
-  box-sizing: border-box;
-}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 #app {
-  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-    'Noto Sans', sans-serif;
+  font-family: var(--font-latin);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

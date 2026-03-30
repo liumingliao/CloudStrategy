@@ -74,6 +74,33 @@ export interface TripPlan {
   weather_info: WeatherInfo[]
   overall_suggestions: string
   budget?: Budget
+  strategy_options?: StrategyOption[]
+  selected_strategy?: string
+  decision_rationales?: DecisionRationale[]
+  risk_notes?: string[]
+}
+
+export interface StrategyOption {
+  name: string
+  description: string
+  pros: string[]
+  cons: string[]
+  trade_offs: string
+  recommended_for: string
+  confidence: number
+}
+
+export interface CuratedAttraction extends Attraction {
+  relevance_score: number
+  weather_suitability: string
+  crowd_level: string
+  curation_reason: string
+}
+
+export interface DecisionRationale {
+  decision: string
+  reason: string
+  alternatives_considered: string[]
 }
 
 export interface TripFormData {

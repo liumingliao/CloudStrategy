@@ -9,6 +9,9 @@
         <div class="top-switch-nav">
           <div class="top-switch-menu-wrap">
             <a-menu class="top-switch-menu" mode="horizontal" :selected-keys="[activeSection]" @click="scrollToSection">
+              <a-menu-item key="strategy" v-if="tripPlan.strategy_options && tripPlan.strategy_options.length > 0">
+                <span>{{ t('result.side.strategy') }}</span>
+              </a-menu-item>
               <a-menu-item key="overview">
                 <span>{{ t('result.side.overview') }}</span>
               </a-menu-item>
@@ -105,7 +108,74 @@
               :bordered="false"
               class="budget-card section-shellless"
             >
-              <div class="budget-detail-panel">
+              <!-- 预算摘要视图 - 渐进披露 -->
+              <div class="budget-summary-view" v-if="!budgetExpanded">
+                <div class="budget-cards-grid">
+                  <div class="budget-summary-card budget-card-total">
+                    <div class="budget-card-label">{{ t('result.budget.total') }}</div>
+                    <div class="budget-card-value">¥{{ formatBudgetAmount(tripPlan.budget?.total ?? 0) }}</div>
+                  </div>
+                  <div class="budget-summary-card">
+                    <div class="budget-card-icon attraction-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/>
+                      </svg>
+                    </div>
+                    <div class="budget-card-content">
+                      <div class="budget-card-value">¥{{ formatBudgetAmount(tripPlan.budget?.total_attractions ?? 0) }}</div>
+                      <div class="budget-card-label">{{ t('result.budget.attraction') }}</div>
+                    </div>
+                  </div>
+                  <div class="budget-summary-card">
+                    <div class="budget-card-icon hotel-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 21h18M3 7v14M21 7v14M6 7V4a1 1 0 011-1h10a1 1 0 011 1v3M8 11h8M8 15h8"/>
+                      </svg>
+                    </div>
+                    <div class="budget-card-content">
+                      <div class="budget-card-value">¥{{ formatBudgetAmount(tripPlan.budget?.total_hotels ?? 0) }}</div>
+                      <div class="budget-card-label">{{ t('result.budget.hotel') }}</div>
+                    </div>
+                  </div>
+                  <div class="budget-summary-card">
+                    <div class="budget-card-icon meal-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+                      </svg>
+                    </div>
+                    <div class="budget-card-content">
+                      <div class="budget-card-value">¥{{ formatBudgetAmount(tripPlan.budget?.total_meals ?? 0) }}</div>
+                      <div class="budget-card-label">{{ t('result.budget.meal') }}</div>
+                    </div>
+                  </div>
+                  <div class="budget-summary-card">
+                    <div class="budget-card-icon transport-icon">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1zM4 22v-7"/>
+                      </svg>
+                    </div>
+                    <div class="budget-card-content">
+                      <div class="budget-card-value">¥{{ formatBudgetAmount(tripPlan.budget?.total_transportation ?? 0) }}</div>
+                      <div class="budget-card-label">{{ t('result.budget.transport') }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="budget-expand-hint" @click="budgetExpanded = true">
+                  <span>{{ t('result.expandDetails') }}</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- 预算详情视图 -->
+              <div class="budget-detail-panel" v-else>
+                <div class="budget-collapse-hint" @click="budgetExpanded = false">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                  </svg>
+                  <span>{{ t('result.collapseSummary') }}</span>
+                </div>
                 <div class="budget-toolbar">
                   <div class="budget-toolbar-item">
                     <span class="budget-toolbar-label">{{ t('result.budget.filterLabel') }}</span>
@@ -246,82 +316,120 @@
           </div>
         </a-card>
 
-        <!-- 每日行程:可折叠 -->
+        <!-- 每日行程:叙事流式布局 -->
         <a-card v-show="activeSection === 'days'" :bordered="false" class="days-card section-shellless">
-          <a-collapse v-model:activeKey="activeDays" accordion>
-            <a-collapse-panel
-              v-for="(day, index) in tripPlan.days"
-              :key="index"
-              :id="`day-${index}`"
-            >
-              <template #header>
-                <div class="day-header">
-                  <span class="day-title">{{ t('common.dayNumber', { day: day.day_index + 1 }) }}</span>
-                  <span class="day-date">{{ day.date }}</span>
-                </div>
-              </template>
-
-              <!-- 行程基本信息 -->
-              <div class="day-info">
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayDescription') }}</span>
-                  <span class="value">{{ day.description }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayTransport') }}</span>
-                  <span class="value">{{ day.transportation }}</span>
-                </div>
-                <div class="info-row">
-                  <span class="label">{{ t('result.dayAccommodation') }}</span>
-                  <span class="value">{{ day.accommodation }}</span>
-                </div>
-              </div>
-
-              <!-- 景点安排 -->
-              <a-divider orientation="left">{{ t('result.attractionTitle') }}</a-divider>
-              <a-list
-                :data-source="day.attractions"
-                :grid="{ gutter: 16, column: 2 }"
+          <!-- 行程总览摘要 -->
+          <div class="days-narrative-summary" v-if="!daysSummaryExpanded">
+            <div class="narrative-timeline">
+              <div
+                v-for="(day, index) in tripPlan.days"
+                :key="index"
+                class="narrative-day-card"
+                @click="activeDays = [index]; daysSummaryExpanded = true"
               >
-                <template #renderItem="{ item, index }">
-                  <a-list-item>
-                    <a-card :title="item.name" size="small" class="attraction-card">
-                      <!-- 编辑模式下的操作按钮 -->
-                      <template #extra v-if="editMode">
-                        <a-space>
-                          <a-button
-                            size="small"
-                            @click="moveAttraction(day.day_index, index, 'up')"
-                            :disabled="index === 0"
-                          >
-                            Up
-                          </a-button>
-                          <a-button
-                            size="small"
-                            @click="moveAttraction(day.day_index, index, 'down')"
-                            :disabled="index === day.attractions.length - 1"
-                          >
-                            Down
-                          </a-button>
-                          <a-button
-                            size="small"
-                            danger
-                            @click="deleteAttraction(day.day_index, index)"
-                          >
-                            {{ t('common.delete') }}
-                          </a-button>
-                        </a-space>
-                      </template>
+                <div class="narrative-day-number">{{ t('common.dayNumber', { day: day.day_index + 1 }) }}</div>
+                <div class="narrative-day-date">{{ day.date }}</div>
+                <div class="narrative-day-highlights">
+                  <span class="highlight-attraction" v-for="attr in day.attractions.slice(0, 2)" :key="attr.name">
+                    {{ attr.name }}
+                  </span>
+                  <span class="highlight-more" v-if="day.attractions.length > 2">
+                    +{{ day.attractions.length - 2 }}
+                  </span>
+                </div>
+                <div class="narrative-day-summary-text">{{ day.description }}</div>
+              </div>
+            </div>
+            <div class="days-expand-hint" @click="daysSummaryExpanded = true">
+              <span>{{ t('result.expandAllDays') }}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </div>
+          </div>
 
-                      <!-- 景点图片 -->
-                      <div class="attraction-image-wrapper">
-                        <img
-                          :src="getAttractionImage(item.name, index)"
-                          :alt="item.name"
-                          class="attraction-image"
-                          @error="handleImageError"
-                        />
-                        <div class="attraction-badge">
+          <!-- 详细行程视图 -->
+          <div class="days-narrative-detail" v-else>
+            <div class="days-collapse-hint" @click="daysSummaryExpanded = false">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 15l-6-6-6 6"/>
+              </svg>
+              <span>{{ t('result.collapseToSummary') }}</span>
+            </div>
+            <a-collapse v-model:activeKey="activeDays" accordion>
+              <a-collapse-panel
+                v-for="(day, index) in tripPlan.days"
+                :key="index"
+                :id="`day-${index}`"
+              >
+                <template #header>
+                  <div class="day-header">
+                    <span class="day-title">{{ t('common.dayNumber', { day: day.day_index + 1 }) }}</span>
+                    <span class="day-date">{{ day.date }}</span>
+                  </div>
+                </template>
+
+                <!-- 行程基本信息 -->
+                <div class="day-info">
+                  <div class="info-row">
+                    <span class="label">{{ t('result.dayDescription') }}</span>
+                    <span class="value">{{ day.description }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">{{ t('result.dayTransport') }}</span>
+                    <span class="value">{{ day.transportation }}</span>
+                  </div>
+                  <div class="info-row">
+                    <span class="label">{{ t('result.dayAccommodation') }}</span>
+                    <span class="value">{{ day.accommodation }}</span>
+                  </div>
+                </div>
+
+                <!-- 景点安排 -->
+                <a-divider orientation="left">{{ t('result.attractionTitle') }}</a-divider>
+                <a-list
+                  :data-source="day.attractions"
+                  :grid="{ gutter: 16, column: 2 }"
+                >
+                  <template #renderItem="{ item, index }">
+                    <a-list-item>
+                      <a-card :title="item.name" size="small" class="attraction-card">
+                        <!-- 编辑模式下的操作按钮 -->
+                        <template #extra v-if="editMode">
+                          <a-space>
+                            <a-button
+                              size="small"
+                              @click="moveAttraction(day.day_index, index, 'up')"
+                              :disabled="index === 0"
+                            >
+                              Up
+                            </a-button>
+                            <a-button
+                              size="small"
+                              @click="moveAttraction(day.day_index, index, 'down')"
+                              :disabled="index === day.attractions.length - 1"
+                            >
+                              Down
+                            </a-button>
+                            <a-button
+                              size="small"
+                              danger
+                              @click="deleteAttraction(day.day_index, index)"
+                            >
+                              {{ t('common.delete') }}
+                            </a-button>
+                          </a-space>
+                        </template>
+
+                        <!-- 景点图片 -->
+                        <div class="attraction-image-wrapper">
+                          <img
+                            :src="getAttractionImage(item.name, index)"
+                            :alt="item.name"
+                            class="attraction-image"
+                            @error="handleImageError"
+                          />
+                          <div class="attraction-badge">
                           <span class="badge-number">{{ index + 1 }}</span>
                         </div>
                         <div v-if="item.ticket_price" class="price-tag">
@@ -382,6 +490,7 @@
               </a-descriptions>
             </a-collapse-panel>
           </a-collapse>
+          </div>
         </a-card>
 
         <a-card
@@ -643,6 +752,8 @@ const budgetFilterType = ref<'all' | BudgetItemType>('all')
 const budgetSortMode = ref<BudgetSortMode>('amountDesc')
 const pendingBudgetItems = ref<BudgetRestoreItem[]>([])
 const activeWeatherIndex = ref(0)
+const budgetExpanded = ref(false)
+const daysSummaryExpanded = ref(false)
 
 const localeTag = computed(() => {
   const currentLocale = String(locale.value || 'en').toLowerCase()
@@ -1676,9 +1787,9 @@ const loadAttractionPhotos = async () => {
   const promises: Promise<void>[] = []
   const apiBase = import.meta.env.VITE_API_BASE_URL ?? ''
 
-  tripPlan.value.days.forEach(day => {
+  tripPlan.value?.days?.forEach(day => {
     day.attractions.forEach(attraction => {
-      const promise = fetch(`${apiBase}/api/poi/photo?name=${encodeURIComponent(attraction.name)}&city=${encodeURIComponent(tripPlan.value.city)}`)
+      const promise = fetch(`${apiBase}/api/poi/photo?name=${encodeURIComponent(attraction.name)}&city=${encodeURIComponent(tripPlan.value?.city ?? '')}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && data.data.photo_url) {
@@ -2147,13 +2258,13 @@ const escapeHtml = (value: unknown): string => {
 
 const buildMarkerContent = (dayNo: number, stopNo: number): string => {
   return `
-    <div class="tripstar-map-marker">
-      <span class="tripstar-map-marker__core" aria-hidden="true">
+    <div class="cloudstrategy-map-marker">
+      <span class="cloudstrategy-map-marker__core" aria-hidden="true">
         <svg fill="#ffffff" width="30px" height="30px" viewBox="0 0 256 256" id="Flat" xmlns="http://www.w3.org/2000/svg">
           <path d="M231.4248,109.2041,169.36426,86.63574,146.7959,24.57422a19.99984,19.99984,0,0,0-37.5918.001L86.63574,86.63574,24.57422,109.2041a19.99984,19.99984,0,0,0,.001,37.5918l62.06054,22.56836,22.56836,62.06152a19.99984,19.99984,0,0,0,37.5918-.001l22.56836-62.06054,62.06152-22.56836a19.99984,19.99984,0,0,0-.001-37.5918Zm-72.01562,38.24219a19.95591,19.95591,0,0,0-11.96289,11.96289l.001-.001L128,212.88672l-19.44629-53.47754A19.95279,19.95279,0,0,0,96.5918,147.44727L43.11328,128l53.47754-19.44629A19.95279,19.95279,0,0,0,108.55273,96.5918L128,43.11328l19.44629,53.47754a19.95279,19.95279,0,0,0,11.96191,11.96191L212.88672,128Z"/>
         </svg>
       </span>
-      <span class="tripstar-map-marker__index" aria-hidden="true">${dayNo}-${stopNo}</span>
+      <span class="cloudstrategy-map-marker__index" aria-hidden="true">${dayNo}-${stopNo}</span>
     </div>
   `
 }
@@ -2168,11 +2279,11 @@ const buildInfoWindowContent = (attraction: any): string => {
   const minuteUnit = escapeHtml(t('result.minuteUnit'))
 
   return `
-    <div class="tripstar-map-tooltip tripstar-map-tooltip--plain">
-      <p class="tripstar-map-tooltip__line tripstar-map-tooltip__line--title">${name}</p>
-      <p class="tripstar-map-tooltip__line">${dayAttractionText}</p>
-      <p class="tripstar-map-tooltip__line">${address}</p>
-      <p class="tripstar-map-tooltip__line">${visitDuration}${minuteUnit}</p>
+    <div class="cloudstrategy-map-tooltip cloudstrategy-map-tooltip--plain">
+      <p class="cloudstrategy-map-tooltip__line cloudstrategy-map-tooltip__line--title">${name}</p>
+      <p class="cloudstrategy-map-tooltip__line">${dayAttractionText}</p>
+      <p class="cloudstrategy-map-tooltip__line">${address}</p>
+      <p class="cloudstrategy-map-tooltip__line">${visitDuration}${minuteUnit}</p>
     </div>
   `
 }
@@ -3396,6 +3507,122 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   height: fit-content;
 }
 
+/* 预算摘要视图 - 渐进披露 */
+.budget-summary-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.budget-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.budget-summary-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+}
+
+.budget-summary-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.budget-summary-card.budget-card-total {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(74, 111, 165, 0.3) 0%, rgba(74, 111, 165, 0.15) 100%);
+  border-color: rgba(74, 111, 165, 0.4);
+  justify-content: center;
+  padding: 24px;
+}
+
+.budget-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.budget-card-icon.attraction-icon {
+  background: rgba(90, 216, 166, 0.2);
+  color: #5ad8a6;
+}
+
+.budget-card-icon.hotel-icon {
+  background: rgba(246, 189, 22, 0.2);
+  color: #f6bd16;
+}
+
+.budget-card-icon.meal-icon {
+  background: rgba(232, 104, 74, 0.2);
+  color: #e8684a;
+}
+
+.budget-card-icon.transport-icon {
+  background: rgba(107, 140, 174, 0.2);
+  color: #6b8cae;
+}
+
+.budget-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.budget-card-value {
+  font-size: 18px;
+  font-weight: 600;
+  color: #ecf3fa;
+}
+
+.budget-card-label {
+  font-size: 12px;
+  color: rgba(232, 239, 247, 0.64);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.budget-card-total .budget-card-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffe3d6;
+}
+
+.budget-card-total .budget-card-label {
+  font-size: 14px;
+  color: rgba(255, 227, 214, 0.8);
+  text-align: center;
+}
+
+.budget-expand-hint,
+.budget-collapse-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+  color: rgba(232, 239, 247, 0.64);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  font-size: 13px;
+}
+
+.budget-expand-hint:hover,
+.budget-collapse-hint:hover {
+  color: #ffe3d6;
+}
+
 .budget-detail-panel {
   min-height: 100%;
   border-radius: 14px;
@@ -3705,6 +3932,101 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 /* 每日行程卡片 */
 .days-card {
   margin-top: 20px;
+}
+
+/* 行程叙事流式布局 - 渐进披露 */
+.days-narrative-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.narrative-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.narrative-day-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.narrative-day-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+  border-color: rgba(255, 227, 214, 0.3);
+}
+
+.narrative-day-number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffe3d6;
+  margin-bottom: 4px;
+}
+
+.narrative-day-date {
+  font-size: 13px;
+  color: rgba(232, 239, 247, 0.5);
+  margin-bottom: 12px;
+}
+
+.narrative-day-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.highlight-attraction {
+  background: rgba(74, 111, 165, 0.25);
+  color: #a8c5e2;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.highlight-more {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(232, 239, 247, 0.6);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.narrative-day-summary-text {
+  font-size: 14px;
+  color: rgba(232, 239, 247, 0.7);
+  line-height: 1.5;
+}
+
+.days-expand-hint,
+.days-collapse-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
+  color: rgba(232, 239, 247, 0.64);
+  cursor: pointer;
+  transition: color 0.2s ease;
+  font-size: 13px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.days-expand-hint:hover,
+.days-collapse-hint:hover {
+  color: #ffe3d6;
+}
+
+.days-narrative-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .day-header {
@@ -4072,15 +4394,15 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
 
 <style>
 :root {
-  --tripstar-map-accent: #d76e42;
-  --tripstar-map-accent-strong: #a14625;
-  --tripstar-map-surface: rgba(17, 29, 38, 0.96);
-  --tripstar-map-border: rgba(215, 110, 66, 0.35);
-  --tripstar-map-text-main: #f6fbff;
-  --tripstar-map-text-sub: rgba(240, 246, 252, 0.72);
+  --cloudstrategy-map-accent: #d76e42;
+  --cloudstrategy-map-accent-strong: #a14625;
+  --cloudstrategy-map-surface: rgba(17, 29, 38, 0.96);
+  --cloudstrategy-map-border: rgba(215, 110, 66, 0.35);
+  --cloudstrategy-map-text-main: #f6fbff;
+  --cloudstrategy-map-text-sub: rgba(240, 246, 252, 0.72);
 }
 
-.tripstar-map-marker {
+.cloudstrategy-map-marker {
   position: relative;
   width: 34px;
   height: 34px;
@@ -4090,7 +4412,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   cursor: pointer;
 }
 
-.tripstar-map-marker__core {
+.cloudstrategy-map-marker__core {
   position: relative;
   z-index: 1;
   width: 20px;
@@ -4104,7 +4426,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45); */
 }
 
-.tripstar-map-marker__icon {
+.cloudstrategy-map-marker__icon {
   width: 12px;
   height: 12px;
   stroke: #ffffff;
@@ -4114,7 +4436,7 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   fill: none;
 }
 
-.tripstar-map-marker__index {
+.cloudstrategy-map-marker__index {
   position: absolute;
   top: calc(100% + 1px);
   left: 50%;
@@ -4128,17 +4450,17 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   pointer-events: none;
 }
 
-.tripstar-map-tooltip {
+.cloudstrategy-map-tooltip {
   max-width: min(320px, calc(100vw - 40px));
   background: transparent;
   border: none;
   box-shadow: none;
   padding: 0;
-  color: var(--tripstar-map-text-main);
+  color: var(--cloudstrategy-map-text-main);
   pointer-events: none;
 }
 
-.tripstar-map-tooltip__line {
+.cloudstrategy-map-tooltip__line {
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
@@ -4148,11 +4470,11 @@ const drawRoutes = async (AMap: any, attractions: any[]): Promise<any[]> => {
   white-space: nowrap;
 }
 
-.tripstar-map-tooltip__line + .tripstar-map-tooltip__line {
+.cloudstrategy-map-tooltip__line + .cloudstrategy-map-tooltip__line {
   margin-top: 2px;
 }
 
-.tripstar-map-tooltip__line--title {
+.cloudstrategy-map-tooltip__line--title {
   font-size: 15px;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
   font-weight: 700;

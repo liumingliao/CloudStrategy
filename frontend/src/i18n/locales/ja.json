@@ -1,18 +1,18 @@
 {
   "app": {
-    "title": "TripStar",
-    "brand": "TripStar",
-    "subBrand": "TripStar · AI 旅行エンジン",
-    "badge": "AI 旅行アシスタント",
+    "title": "CloudStrategy",
+    "brand": "CloudStrategy",
+    "subBrand": "CloudStrategy · AI 旅行インテリジェンス",
+    "badge": "AI 旅行インテリジェンス",
     "language": {
       "label": "言語",
       "zh": "中文",
       "ja": "日本語",
       "en": "English"
     },
-    "footerBrand": "TripStar",
+    "footerBrand": "CloudStrategy",
     "footerCopy": "{year} All rights reserved.",
-    "footerTech": "Powered by HelloAgents + AMap MCP"
+    "footerTech": "Powered by CloudStrategy + AMap MCP"
   },
   "common": {
     "dayNumber": "{day} 日目",
@@ -115,6 +115,7 @@
     "exportPdf": "PDF として保存",
     "side": {
       "overview": "旅程概要",
+      "strategy": "戦略オプション",
       "budget": "予算内訳",
       "map": "観光地マップ",
       "days": "日別プラン",
@@ -182,7 +183,7 @@
     "chat": {
       "toggle": "AI オンライン",
       "title": "旅程 AI チャット",
-      "welcome": "こんにちは。TripStar AI です。旅程に関することは何でも聞いてください。例：",
+      "welcome": "こんにちは。CloudStrategy AI です。旅程に関することは何でも聞いてください。例：",
       "quickPriceLabel": "料金確認",
       "quickSuitabilityLabel": "高齢者向け？",
       "quickMealLabel": "食費確認",
@@ -236,7 +237,7 @@
     },
     "export": {
       "filePrefix": "旅行プラン",
-      "footer": "TripStar · AI 旅行エンジンで生成",
+      "footer": "CloudStrategy · AI 旅行インテリジェンスで生成",
       "title": "{city} 旅行プラン",
       "subtitle": "{start} 〜 {end} · {days} 日間",
       "perNight": "/泊",
@@ -252,6 +253,13 @@
     "imageLoadFailed": "画像の読み込みに失敗しました",
     "mapInfo": {
       "dayAttraction": "{day} 日目 スポット {index}"
+    },
+    "expandDetails": "詳細を見る",
+    "collapseSummary": "概要に戻す",
+    "expandAllDays": "全行程を見る",
+    "collapseToSummary": "概要に戻る",
+    "budget": {
+      "total": "予算合計"
     }
   }
 }

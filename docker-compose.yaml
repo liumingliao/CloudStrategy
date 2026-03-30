@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  trip-planner:
+  cloudstrategy:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         VITE_AMAP_WEB_JS_KEY: ${VITE_AMAP_WEB_JS_KEY:-your_amap_web_js_api_key_here}
-    container_name: helloagents-trip-planner
+    container_name: cloudstrategy
     ports:
       - "7860:7860"
     environment:

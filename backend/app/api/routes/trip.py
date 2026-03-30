@@ -113,6 +113,35 @@ async def get_task_status(task_id: str):
 
 
 @router.get(
+    "/strategies/{task_id}",
+    summary="获取策略方案",
+    description="获取指定任务的策略方案选项（用于在生成前选择方案）"
+)
+async def get_strategies(task_id: str):
+    """获取策略方案选项"""
+    task = _tasks.get(task_id)
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="任务不存在")
+    
+    if task.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="任务尚未完成")
+    
+    result = task.get("result")
+    if not result or not result.data:
+        raise HTTPException(status_code=400, detail="无行程数据")
+    
+    trip_plan = result.data
+    
+    return {
+        "strategy_options": trip_plan.strategy_options,
+        "selected_strategy": trip_plan.selected_strategy,
+        "decision_rationales": trip_plan.decision_rationales,
+        "risk_notes": trip_plan.risk_notes
+    }
+
+
+@router.get(
     "/health",
     summary="健康检查",
     description="检查旅行规划服务是否正常"
@@ -123,7 +152,7 @@ async def health_check():
         agent = get_trip_planner_agent()
         return {
             "status": "healthy",
-            "service": "trip-planner",
+            "service": "cloudstrategy",
             "agent_name": agent.agent.name,
             "tools_count": len(agent.agent.list_tools())
         }

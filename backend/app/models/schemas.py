@@ -13,10 +13,10 @@ class TripRequest(BaseModel):
     start_date: str = Field(..., description="开始日期 YYYY-MM-DD", example="2025-06-01")
     end_date: str = Field(..., description="结束日期 YYYY-MM-DD", example="2025-06-03")
     travel_days: int = Field(..., description="旅行天数", ge=1, le=30, example=3)
-    transportation: str = Field(..., description="交通方式", example="公共交通")
-    accommodation: str = Field(..., description="住宿偏好", example="经济型酒店")
-    preferences: List[str] = Field(default=[], description="旅行偏好标签", example=["历史文化", "美食"])
-    free_text_input: Optional[str] = Field(default="", description="额外要求", example="希望多安排一些博物馆")
+    transportation: Optional[str] = Field(default=None, description="交通方式（可选，由AI推断）", example="公共交通")
+    accommodation: Optional[str] = Field(default=None, description="住宿偏好（可选，由AI推断）", example="经济型酒店")
+    preferences: Optional[List[str]] = Field(default=[], description="旅行偏好标签（可选，由AI推断）", example=["历史文化", "美食"])
+    preference_description: Optional[str] = Field(default="", description="自然语言偏好描述", example="喜欢历史文化，带老人出行，预算有限")
     
     class Config:
         json_schema_extra = {
@@ -139,6 +139,24 @@ class Budget(BaseModel):
     total: int = Field(default=0, description="总费用")
 
 
+class StrategyOption(BaseModel):
+    """策略方案选项"""
+    name: str = Field(..., description="方案名称", example="经典路线")
+    description: str = Field(..., description="方案描述")
+    pros: List[str] = Field(default=[], description="优势列表")
+    cons: List[str] = Field(default=[], description="劣势列表")
+    trade_offs: str = Field(default="", description="取舍分析")
+    recommended_for: str = Field(default="", description="适合人群")
+    confidence: float = Field(default=0.0, description="匹配度 0.0-1.0")
+
+
+class DecisionRationale(BaseModel):
+    """决策理由"""
+    decision: str = Field(..., description="决策内容")
+    reason: str = Field(..., description="决策理由")
+    alternatives_considered: List[str] = Field(default=[], description="考虑的替代方案")
+
+
 class TripPlan(BaseModel):
     """旅行计划"""
     city: str = Field(..., description="目的地城市")
@@ -148,6 +166,10 @@ class TripPlan(BaseModel):
     weather_info: List[WeatherInfo] = Field(default=[], description="天气信息")
     overall_suggestions: str = Field(..., description="总体建议")
     budget: Optional[Budget] = Field(default=None, description="预算信息")
+    strategy_options: List[StrategyOption] = Field(default=[], description="策略方案选项")
+    selected_strategy: str = Field(default="", description="已选策略方案")
+    decision_rationales: List[DecisionRationale] = Field(default=[], description="关键决策理由")
+    risk_notes: List[str] = Field(default=[], description="风险提示")
 
 
 # ============ 知识图谱数据模型 ============
@@ -179,6 +201,25 @@ class KnowledgeGraphData(BaseModel):
     nodes: List[GraphNode] = Field(default=[], description="节点列表")
     edges: List[GraphEdge] = Field(default=[], description="边列表")
     categories: List[GraphCategory] = Field(default=[], description="分类列表")
+
+
+class CuratedAttraction(BaseModel):
+    """筛选后的景点（含元数据）"""
+    name: str = Field(..., description="景点名称")
+    address: str = Field(..., description="地址")
+    location: Location = Field(..., description="经纬度坐标")
+    visit_duration: int = Field(..., description="建议游览时间(分钟)")
+    description: str = Field(..., description="景点描述")
+    category: Optional[str] = Field(default="景点", description="景点类别")
+    rating: Optional[float] = Field(default=None, description="评分")
+    photos: Optional[List[str]] = Field(default_factory=list, description="景点图片URL列表")
+    poi_id: Optional[str] = Field(default="", description="POI ID")
+    image_url: Optional[str] = Field(default=None, description="图片URL")
+    ticket_price: int = Field(default=0, description="门票价格(元)")
+    relevance_score: float = Field(default=0.0, description="相关性评分 0.0-1.0")
+    weather_suitability: str = Field(default="", description="天气适配度")
+    crowd_level: str = Field(default="", description="人流级别: 热门/适中/小众")
+    curation_reason: str = Field(default="", description="推荐理由")
 
 
 class TripPlanResponse(BaseModel):
